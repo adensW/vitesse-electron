@@ -1,0 +1,15 @@
+{
+  "env": {
+    "browser": true,
+    "node": false
+  },
+  "extends": [
+    /** @see https://eslint.vuejs.org/rules/ */
+    "@antfu"
+  ],
+  "parserOptions": {
+    "parser": "@typescript-eslint/parser",
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  }
+}
