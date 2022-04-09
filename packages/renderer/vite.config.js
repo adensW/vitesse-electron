@@ -61,7 +61,7 @@ export default defineConfig({
 
   // https://github.com/antfu/unocss
   // see unocss.config.ts for config
-  Unocss(),
+  Unocss(`${join(PACKAGE_ROOT, 'unocss.config.ts')}`),
   // https://github.com/intlify/bundle-tools/tree/main/packages/vite-plugin-vue-i18n
   VueI18n({
     runtimeOnly: true,
