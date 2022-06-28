@@ -101,6 +101,7 @@ const { t } = useI18n()
     <code>packages/renderer/src/App.vue</code> to test hot module replacement.
   </p>
 </template>
+
 <route lang="yaml">
 meta:
   layout: home

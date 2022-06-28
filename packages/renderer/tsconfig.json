@@ -1,26 +1,31 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "module": "esnext",
     "target": "esnext",
-    "sourceMap": false,
-    "moduleResolution": "Node",
-    "skipLibCheck": true,
+    "lib": ["ESNext", "dom", "dom.iterable"],
     "strict": true,
-    "isolatedModules": true,
     "esModuleInterop": true,
+    "incremental": false,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "jsx": "preserve",
+    "sourceMap": false,
+    "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
-    "types" : ["node",  
+    "types" : [  
       "vite/client",
       "vue/ref-macros",
       "vite-plugin-pages/client",
       "vite-plugin-vue-layouts/client"],
-    "baseUrl": ".",
     "paths": {
       "~/*": [
         "./src/*"
       ]
     },
-    "lib": ["ESNext", "dom", "dom.iterable"]
   },
 
   "include": [

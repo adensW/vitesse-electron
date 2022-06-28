@@ -1,12 +1,21 @@
 # Vite Electron Builder Boilerplate
 
+> Vite+Electron = 🔥
 
-> Vue + Vite template based on [@antfu](https://github.com/antfu)'s [Vitesse](https://github.com/antfu/vitesse) but without markdown
+This is template for secure electron applications. Written following the latest safety requirements, recommendations and best practices.
+
+Renderer view use Vue + Vite template based on [@antfu](https://github.com/antfu)'s [Vitesse](https://github.com/antfu/vitesse) but without markdown
+
+Under the hood is used [Vite] — superfast, nextgen bundler, and [electron-builder] for compilation.
+
 <br>
 
 ## Features
 
+- 💻 [Electron](https://www.electronjs.org), [electron-builder](https://github.com/electron-userland/electron-builder) - build cross-platform desktop app
+
 - ⚡️ [Vue 3](https://github.com/vuejs/vue-next), [Vite 2](https://github.com/vitejs/vite), [pnpm](https://pnpm.js.org/), [ESBuild](https://github.com/evanw/esbuild) - born with fastness
+
 
 - 🗂 [File based routing](./src/pages)
 
@@ -96,7 +105,7 @@
 If you prefer to do it manually with the cleaner git history
 
 ```bash
-npx degit adensW/vitesse-minus my-vitesse-app
+npx degit adensW/vitesse-electron my-vitesse-app
 cd my-vitesse-app
 pnpm i # If you don't have pnpm installed, run: npm install -g pnpm
 ```
@@ -131,81 +140,11 @@ To build the App, run
 ```bash
 pnpm build
 ```
-> Vite+Electron = 🔥
-
-This is template for secure electron applications. Written following the latest safety requirements, recommendations and best practices.
-
-Under the hood is used [Vite] — superfast, nextgen bundler, and [electron-builder] for compilation.
-
 
 ---
 
-## Get started
-
-Follow these steps to get started with this template:
-
-1. Click the **[Use this template](https://github.com/cawa-93/vite-electron-builder/generate)** button (you must be logged in) or just clone this repo.
-2. If you want to use another package manager don't forget to edit [`.github/workflows`](/.github/workflows) -- it uses `npm` by default.
-
-That's all you need. 😉
-
-**Note**: This template uses npm v7 feature — [**Installing Peer Dependencies Automatically**](https://github.com/npm/rfcs/blob/latest/implemented/0025-install-peer-deps.md). If you are using a different package manager, you may need to install some peerDependencies manually.
-
-
-**Note**: Find more useful forks [here](https://github.com/cawa-93/vite-electron-builder/discussions/categories/forks).
-
-
-## Features
-
-### Electron [![Electron version](https://img.shields.io/github/package-json/dependency-version/cawa-93/vite-electron-builder/dev/electron?label=%20)][electron]
-- This template uses the latest electron version with all the latest security patches.
-- The architecture of the application is built according to the security [guides](https://www.electronjs.org/docs/tutorial/security) and best practices.
-- The latest version of the [electron-builder] is used to compile the application.
-
-
-### Vite [![Vite version](https://img.shields.io/github/package-json/dependency-version/cawa-93/vite-electron-builder/dev/vite?label=%20)][vite]
-- [Vite] is used to bundle all source codes. This is an extremely fast packer that has a bunch of great features. You can learn more about how it is arranged in [this](https://youtu.be/xXrhg26VCSc) video.
-- Vite [supports](https://vitejs.dev/guide/env-and-mode.html) reading `.env` files. You can also specify types of your environment variables in [`types/env.d.ts`](types/env.d.ts).
-- Hot reloads for `Main` and `Renderer` processes.
-
-Vite provides many useful features, such as: `TypeScript`, `TSX/JSX`, `CSS/JSON Importing`, `CSS Modules`, `Web Assembly` and much more.
-
-[See all Vite features](https://vitejs.dev/guide/features.html).
-
-
-### TypeScript [![TypeScript version](https://img.shields.io/github/package-json/dependency-version/cawa-93/vite-electron-builder/dev/typescript?label=%20)][typescript] (optional)
-- The latest version of TypeScript is used for all the source code.
-- **Vite** supports TypeScript out of the box. However, it does not support type checking.
-- Code formatting rules follow the latest TypeScript recommendations and best practices thanks to [@typescript-eslint/eslint-plugin](https://www.npmjs.com/package/@typescript-eslint/eslint-plugin).
-
-**[See this discussion](https://github.com/cawa-93/vite-electron-builder/discussions/339)** if you want completely remove TypeScript.
-
-
-### Vue [![Vue version](https://img.shields.io/github/package-json/dependency-version/cawa-93/vite-electron-builder/vue?label=%20&)][vue] (optional)
-- By default, web pages are built using [Vue]. However, you can easily change that. Or not use additional frameworks at all.
-- Code formatting rules follow the latest Vue recommendations and best practices thanks to [eslint-plugin-vue].
-- Installed [Vue.js devtools beta](https://chrome.google.com/webstore/detail/vuejs-devtools/ljjemllljcmogpfapbkkighbhhppjdbg) with Vue 3 support.
-
-See [examples of web pages for different frameworks](https://github.com/vitejs/vite/tree/main/packages/create-vite).
-
-### Continuous Integration
-- The configured workflow will check the types for each push and PR.
-- The configured workflow will check the code style for each push and PR.
-- **Automatic tests** used [Vitest ![Vitest version](https://img.shields.io/github/package-json/dependency-version/cawa-93/vite-electron-builder/dev/vitest?label=%20&color=yellow)][vitest] -- A blazing fast test framework powered by Vite.
-  - Unit tests are placed within each package and run separately.
-  - End-to-end tests are placed in the root [`tests`](tests) directory and use [playwright].
-
-
-
-### Continuous delivery
-- Each time you push changes to the `main` branch, the [`release`](.github/workflows/release.yml) workflow starts, which creates a release draft.
-  - The version is automatically set based on the current date in the format `yy.mm.dd-minutes`.
-  - Notes are automatically generated and added to the release draft.
-  - Code signing supported. See [`compile` job in the `release` workflow](.github/workflows/release.yml).
-- **Auto-update is supported**. After the release is published, all client applications will download the new version and install updates silently.
-
 ## How it works
-The template requires a minimum amount [dependencies](package.json). Only **Vite** is used for building, nothing more.
+
 
 ### Project Structure
 
@@ -343,11 +282,6 @@ VITE_SOME_KEY=123
 Only `VITE_SOME_KEY` will be exposed as `import.meta.env.VITE_SOME_KEY` to your client source code, but `DB_PASSWORD` will not.
 
 
-## Contribution
-
-See [Contributing Guide](contributing.md).
-
-
 [vite]: https://github.com/vitejs/vite/
 [electron]: https://github.com/electron/electron
 [electron-builder]: https://github.com/electron-userland/electron-builder
@@ -358,5 +292,4 @@ See [Contributing Guide](contributing.md).
 [vitest]: https://vitest.dev
 [vue-tsc]: https://github.com/johnsoncodehk/vue-tsc
 [eslint-plugin-vue]: https://github.com/vuejs/eslint-plugin-vue
-[cawa-93-github]: https://github.com/cawa-93/
-[cawa-93-sponsor]: https://www.patreon.com/Kozack/
+
