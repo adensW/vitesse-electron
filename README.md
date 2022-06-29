@@ -2,7 +2,7 @@
 
 > Vite+Electron = 🔥
 
-This is template for secure electron applications. Written following the latest safety requirements, recommendations and best practices.
+This is template for secure electron applications. Written following the latest safety requirements, recommendations and best practices. base on [@cawa-99](https://github.com/cawa-93/)'s [vite-electron-builder](https://github.com/cawa-93/vite-electron-builder)
 
 Renderer view use Vue + Vite template based on [@antfu](https://github.com/antfu)'s [Vitesse](https://github.com/antfu/vitesse) but without markdown
 
@@ -145,18 +145,43 @@ pnpm build
 
 ## How it works
 
-
 ### Project Structure
 
 The structure of this template is very similar to the structure of a monorepo.
 
+```mermaid
+flowchart TB;
+
+packages/preload <-. IPC Messages .-> packages/main
+
+subgraph packages/main
+M[index.ts] --> EM[Electron Main Process Modules]
+M --> N2[Node.js API]
+end
+
+
+subgraph packages/preload
+P[index.ts] --> N[Node.js API]
+P --> ED[External dependencies]
+P --> ER[Electron Renderer Process Modules]
+end
+
+
+subgraph packages/renderer
+R[index.html] --> W[Web API]
+R --> BD[Bundled dependencies]
+R --> F[Web Frameforks]
+end
+
+packages/renderer -- Call Exposed API --> P
+```
+
 The entire source code of the program is divided into three modules (packages) that are each bundled independently:
+- [`packages/renderer`](packages/renderer). Responsible for the contents of the application window. In fact, it is a regular web application. In developer mode, you can even open it in a browser. The development and build process is the same as for classic web applications. Access to low-level API electrons or Node.js is through the _preload_ layer.
+- [`packages/preload`](packages/preload). Acts as an intermediate link between the _renderer_ layer and the low-level API electrons or Node.js. Runs in an _isolated browser context_, but has direct access to Node.js api. See [Checklist: Security Recommendations](https://www.electronjs.org/docs/tutorial/security#2-do-not-enable-nodejs-integration-for-remote-content).
 - [`packages/main`](packages/main)
   Electron [**main script**](https://www.electronjs.org/docs/tutorial/quick-start#create-the-main-script-file).
-- [`packages/preload`](packages/preload)
-  Used in `BrowserWindow.webPreferences.preload`. See [Checklist: Security Recommendations](https://www.electronjs.org/docs/tutorial/security#2-do-not-enable-nodejs-integration-for-remote-content).
-- [`packages/renderer`](packages/renderer)
-  Electron [**web page**](https://www.electronjs.org/docs/tutorial/quick-start#create-a-web-page).
+
 
 ### Build web resources
 
@@ -172,85 +197,54 @@ To do this using the [electron-builder]:
 - Using GitHub Actions: The application is compiled for any platform and ready-to-distribute files are automatically added as a draft to the GitHub releases page.
 
 ### Working with dependencies
-There is one important nuance when working with dependencies.
-At the build stage Vite will analyze your code, find all the imported dependencies, apply tree shaking, optimize and **bundle them inside the output source files**. So when you write something like this:
+Because the `renderer` works and builds like a _regular web application_, you can only use dependencies that support the browser or compile to a browser-friendly state.
+
+This means that in the `renderer` you are free to use dependencies such as Vue, React, lodash, axios and so on. But you can't use, say, systeminformation or  pg because these dependencies need access to a node api to work, which is not available in the `renderer` context.
+
+All dependencies that require node.js api can be used in the [`preload` script](https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts).
+
+Here is an example. Let's say you need to read some data from the file system or database in the renderer.
+
+In preload context create a method that reads and return data. To make the method announced in the preload available in the render, you usually need to call the [`electron.contextBridge.exposeInMainWorld`](https://www.electronjs.org/ru/docs/latest/api/context-bridge). However, this template uses the [unplugin-auto-expose](https://github.com/cawa-93/unplugin-auto-expose) plugin, so you just need to export the method from the preload. The `exposeInMainWorld` will be called automatically.
 ```ts
-// source.ts
-import {createApp} from 'vue'
-createApp()
-```
-It turns into:
-```js
-// bundle.js
-function createApp() { /* ... */ }
-createApp()
-```
-Which leaves basically no imports during runtime.
-
-**But it doesn't always work**. Vite was designed to work with browser-oriented packages. So it is not able to bundle Node built-in modules, or native dependencies, or some Node.js specific packages, or Electron itself.
-
-Modules that Vite is unable to bundle are forced to be supplied as `external` in `vite.config.js`. External modules are not optimized and their imports remain during runtime.
-
-```ts
-// source.ts
+// preload/index.ts
 import {writeFile} from 'fs'
-writeFile()
 
-// bundle.js
-const {writeFile} = require('fs')
-writeFile()
-```
-
-### Using external modules in renderer
-According to [Electron's security guidelines](https://www.electronjs.org/docs/tutorial/security#2-do-not-enable-nodejs-integration-for-remote-content), Node.js integration is disabled for remote content. This means that **you cannot call any Node.js api in the `packages/renderer` directly**. This also means you can't import external modules during runtime in the renderer:
-```js
-// renderer.bundle.js
-const {writeFile} = require('fs') // ReferenceError: require is not defined
-writeFile()
-```
-
-To use external modules in Renderer you **must** describe the interface in the `packages/preload` where the Node.js api is allowed:
-```ts
-// packages/preload/src/index.ts
-import {type BinaryLike, createHash} from 'crypto';
-import {exposeInMainWorld} from './exposeInMainWorld';
-
-exposeInMainWorld('nodeCrypto', {
-  sha256sum(data: BinaryLike) {
-    const hash = createHash('sha256');
-    hash.update(data);
-    return hash.digest('hex');
-  },
-});
-```
-If you use a TypeScript you must add the signature of your method to the contracts:
-```ts
-// packages/preload/contracts.d.ts 
-interface Exposed {
-    nodeCrypto: { 
-        sha256sum(data: import("crypto").BinaryLike): string; 
-    };
+// Everything you exported from preload/index.ts may be called in renderer
+export function getData() {
+  return /* ... */
 }
 ```
-And now, you can safely use the registered method:
+Now you can import and call the method in renderer
 ```ts
-// packages/renderer/src/App.vue
-window.nodeCrypto.sha256sum('data')
+// renderer/somewere.component.ts
+import {getData} from '#preload'
+const dataFromFS = getData()
 ```
+
+[Read more about Security Considerations](https://www.electronjs.org/docs/tutorial/context-isolation#security-considerations).
+
+### Working with Electron API
+Although the preload has access to Node.js API, it **still runs in the BrowserWindow context**, so a limited electron modules are available in it. Check the [electron docs](https://www.electronjs.org/ru/docs/latest/api/clipboard) for full list of available methods.
+
+All other electron methods can be invoked in the `main`.
 
 As a result, the architecture of interaction between all modules is as follows:
 
 ```mermaid
-flowchart LR;
-R --> W[Web API]
-R --> BD[Bundled dependencies]
-R[Renderer] -- Call Exposed API --> P[Preload] --> N[Node.js API]
-P --> ED[External dependencies]
-P --> ER[Electron Renderer Process Modules]
-P <-. IPC Messages .-> M[Main] --> EM[Electron Main Process Modules]
+sequenceDiagram
+renderer->>+preload: Read data from file system
+preload->>-renderer: Data
+renderer->>preload: Maximize window
+activate preload
+preload-->>main: Invoke IPC command
+activate main
+main-->>preload: IPC response
+deactivate main
+preload->>renderer: Window maximized
+deactivate preload
 ```
-
-[Read more about Security Considerations](https://www.electronjs.org/docs/tutorial/context-isolation#security-considerations).
+[Read more aboud Inter-Process Communication](https://www.electronjs.org/docs/latest/tutorial/ipc)
 
 
 ### Modes and Environment Variables
@@ -280,16 +274,4 @@ DB_PASSWORD=foobar
 VITE_SOME_KEY=123
 ```
 Only `VITE_SOME_KEY` will be exposed as `import.meta.env.VITE_SOME_KEY` to your client source code, but `DB_PASSWORD` will not.
-
-
-[vite]: https://github.com/vitejs/vite/
-[electron]: https://github.com/electron/electron
-[electron-builder]: https://github.com/electron-userland/electron-builder
-[vue]: https://github.com/vuejs/vue-next
-[vue-router]: https://github.com/vuejs/vue-router-next/
-[typescript]: https://github.com/microsoft/TypeScript/
-[playwright]: https://playwright.dev
-[vitest]: https://vitest.dev
-[vue-tsc]: https://github.com/johnsoncodehk/vue-tsc
-[eslint-plugin-vue]: https://github.com/vuejs/eslint-plugin-vue
 
