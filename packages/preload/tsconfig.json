@@ -7,10 +7,8 @@
     "skipLibCheck": true,
     "strict": true,
     "isolatedModules": true,
-
-    "types" : ["node"],
-
     "baseUrl": ".",
+    "types": ["node"]
   },
   "include": [
     "src/**/*.ts",

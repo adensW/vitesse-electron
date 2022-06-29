@@ -1,6 +1,5 @@
 import {chrome} from '../../.electron-vendors.cache.json';
-import {builtinModules} from 'module';
-
+import {preload} from 'unplugin-auto-expose';
 const PACKAGE_ROOT = __dirname;
 
 /**
@@ -12,6 +11,7 @@ const config = {
   root: PACKAGE_ROOT,
   envDir: process.cwd(),
   build: {
+    ssr: true,
     sourcemap: 'inline',
     target: `chrome${chrome}`,
     outDir: 'dist',
@@ -22,10 +22,6 @@ const config = {
       formats: ['cjs'],
     },
     rollupOptions: {
-      external: [
-        'electron',
-        ...builtinModules.flatMap(p => [p, `node:${p}`]),
-      ],
       output: {
         entryFileNames: '[name].cjs',
       },
@@ -33,6 +29,9 @@ const config = {
     emptyOutDir: true,
     brotliSize: false,
   },
+  plugins: [
+    preload.vite(),
+  ],
 };
 
 export default config;
