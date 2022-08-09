@@ -1,4 +1,4 @@
-import {BrowserWindow} from 'electron';
+import {app,BrowserWindow} from 'electron';
 import {join} from 'path';
 import {URL} from 'url';
 
@@ -6,8 +6,11 @@ async function createWindow() {
   const browserWindow = new BrowserWindow({
     show: false, // Use 'ready-to-show' event to show window
     webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false, // Sandbox disabled because the demo of preload script depend on the Node.js api
       webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
-      preload: join(__dirname, '../../preload/dist/index.cjs'),
+      preload: join(app.getAppPath(), 'packages/preload/dist/index.cjs'),
     },
   });
 
